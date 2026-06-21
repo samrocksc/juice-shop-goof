@@ -10,6 +10,9 @@ on:
   pull_request:
     branches: ["master"]
 
+env:
+  SNYK_ORG: sampro
+
 jobs:
   snyk-os:
     environment: snyk
@@ -29,7 +32,7 @@ jobs:
       - name: Authenticate and run Snyk Open Source Scan + Monitor
         run: |
           npm install --ignore-engines
-          snyk test
+          snyk test --org=${{ env.SNYK_ORG }}
           snyk monitor
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -47,7 +50,7 @@ jobs:
           sudo mv ./snyk /usr/local/bin/
       - name: Configure and run Snyk Code Scan
         run: |
-          snyk code test
+          snyk code test --org=${{ env.SNYK_ORG }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -66,7 +69,7 @@ jobs:
           sudo mv ./snyk /usr/local/bin/
       - name: Scan and Monitor Docker Vulnerabilities
         run: |
-          snyk container test boosef-juiceshop:latest --file=Dockerfile
+          snyk container test boosef-juiceshop:latest --file=Dockerfile --org=${{ env.SNYK_ORG }}
           snyk container monitor boosef-juiceshop:latest --file=Dockerfile
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -84,6 +87,6 @@ jobs:
           sudo mv ./snyk /usr/local/bin/
       - name: Run and monitor Snyk to check configuration files for security issues
         run: |
-          snyk iac test --report
+          snyk iac test --report --org=${{ env.SNYK_ORG }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
