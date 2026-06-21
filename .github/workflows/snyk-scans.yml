@@ -7,7 +7,7 @@ on:
     branches: ["master"]
 
 env:
-  SNYK_ORG: sampro
+  SNYK_ORG: Sampro
 
 jobs:
   snyk-os:
@@ -19,8 +19,6 @@ jobs:
         with:
           node-version: 20
       - uses: snyk/actions/setup@master
-        with:
-          args: --org=${{ env.SNYK_ORG }}
       - name: Snyk OS Test
         run: |
           npm install snyk
@@ -38,8 +36,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: snyk/actions/setup@master
-        with:
-          args: --org=${{ env.SNYK_ORG }}
       - name: Snyk Code Test
         continue-on-error: true
         run: snyk code test --org=${{ env.SNYK_ORG }}
@@ -57,7 +53,7 @@ jobs:
         with:
           image: boosef-juiceshop:latest
           command: test
-          args: --org=${{ env.SNYK_ORG }}
+          args: --org=sampro
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Monitor Docker Vulnerabilities
@@ -65,7 +61,7 @@ jobs:
         with:
           image: boosef-juiceshop:latest
           command: monitor
-          args: --org=${{ env.SNYK_ORG }}
+          args: --org=sampro
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -76,7 +72,7 @@ jobs:
       - name: Run and monitor Snyk to check configuration files for security issues
         continue-on-error: true
         uses: snyk/actions/iac@master
+        with:
+          args: --report --org=sampro
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --report --org=${{ env.SNYK_ORG }}
