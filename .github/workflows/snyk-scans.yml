@@ -6,9 +6,11 @@ on:
   pull_request:
     branches: ["master"]
 
+env:
+  SNYK_ORG: sampro
+
 jobs:
   snyk-os:
-    environment: snyk
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -17,47 +19,57 @@ jobs:
         with:
           node-version: 20
       - uses: snyk/actions/setup@master
+        with:
+          args: --org=${{ env.SNYK_ORG }}
       - name: Snyk OS Test
         run: |
           npm install snyk
-          snyk test
+          snyk test --org=${{ env.SNYK_ORG }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
       - name: Monitor dependencies for security issues with Snyk
-        run: snyk monitor
+        run: snyk monitor --org=${{ env.SNYK_ORG }}
         env:
-          SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   snyk-code:
-    environment: snyk
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: snyk/actions/setup@master
+        with:
+          args: --org=${{ env.SNYK_ORG }}
       - name: Snyk Code Test
         continue-on-error: true
-        run: snyk code test
+        run: snyk code test --org=${{ env.SNYK_ORG }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   snyk-container:
-    environment: snyk
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag boosef-juiceshop:latest
-      - name: Scan and Monitor Docker Vulnerabilities
+      - name: Scan Docker Vulnerabilities
         uses: snyk/actions/docker@master
+        with:
+          image: boosef-juiceshop:latest
+          command: test
+          args: --org=${{ env.SNYK_ORG }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Monitor Docker Vulnerabilities
+        uses: snyk/actions/docker@master
         with:
           image: boosef-juiceshop:latest
           command: monitor
+          args: --org=${{ env.SNYK_ORG }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   snyk-iac:
-    environment: snyk
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -67,4 +79,4 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --report
+          args: --report --org=${{ env.SNYK_ORG }}
