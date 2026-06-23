@@ -3,6 +3,7 @@ name: Snyk Full Platform (CLI)
 # Prerequisites:
 # - Set a SNYK_TOKEN under env secrets in an env called "Snyk"
 # - If you are not running the scan on your default org in Snyk, set the org id in a secret called SNYK_ORG in the same env as above (env called "Snyk") and add an additional --org=${{ secrets.SNYK_ORG }} parameter in all the test commands 
+# - If running on an international tenant(e.g. EU), ensure you set the SNYK_API to its proper region example: export SNYK_API="https://api.eu.snyk.io"
 
 on:
   push:
@@ -51,33 +52,32 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-    - uses: actions/checkout@master
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag boosef-juiceshop:latest
-    - name: Install Snyk CLI
-      run: |
-        wget -O snyk https://static.snyk.io/cli/latest/snyk-linux
-        chmod +x ./snyk
-        mv ./snyk /usr/local/bin/
-    - name: Scan and Monitor Docker Vulnerabilities
-      run: |   
-        snyk auth ${{ secrets.SNYK_TOKEN }}
-        snyk container test boosef-juiceshop:latest --file=Dockerfile
-        snyk container monitor boosef-juiceshop:latest --file=Dockerfile
-     
+      - uses: actions/checkout@master
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag boosef-juiceshop:latest
+      - name: Install Snyk CLI
+        run: |
+          wget -O snyk https://static.snyk.io/cli/latest/snyk-linux
+          chmod +x ./snyk
+          mv ./snyk /usr/local/bin/
+      - name: Scan and Monitor Docker Vulnerabilities
+        run: |
+          snyk auth ${{ secrets.SNYK_TOKEN }}
+          snyk container test boosef-juiceshop:latest --file=Dockerfile
+          snyk container monitor boosef-juiceshop:latest --file=Dockerfile
+
   snyk-iac:
     environment: snyk
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-    - uses: actions/checkout@master
-    - name: Install Snyk CLI
-      run: |
-        wget -O snyk https://static.snyk.io/cli/latest/snyk-linux
-        chmod +x ./snyk
-        mv ./snyk /usr/local/bin/
-    - name: Run and monitor Snyk to check configuration files for security issues
-      run: |   
-        snyk auth ${{ secrets.SNYK_TOKEN }}
-        snyk iac test --report
- 
+      - uses: actions/checkout@master
+      - name: Install Snyk CLI
+        run: |
+          wget -O snyk https://static.snyk.io/cli/latest/snyk-linux
+          chmod +x ./snyk
+          mv ./snyk /usr/local/bin/
+      - name: Run and monitor Snyk to check configuration files for security issues
+        run: |
+          snyk auth ${{ secrets.SNYK_TOKEN }}
+          snyk iac test --report
